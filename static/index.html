@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JWT Lab · See authentication happen</title>
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+<header><a class="brand" href="/">◈ JWT LAB</a><span class="tag">LOCAL LEARNING SANDBOX</span></header>
+<main>
+  <div class="intro"><p class="eyebrow">AUTHENTICATION, MADE VISIBLE</p><h1>Follow the life of a token.</h1><p>Sign in. Make a request. Watch it expire. Refresh and try again.<br>Every button talks to your Python server. Every exchange is visible.</p></div>
+  <div class="flow" aria-label="Authentication flow"><span id="flow-login">01 · Sign in</span><b>→</b><span id="flow-access">02 · Use access token</span><b>→</b><span id="flow-refresh">03 · Rotate tokens</span><b>→</b><span id="flow-logout">04 · Log out</span></div>
+  <p id="notice" role="status">Start with Bob. His employee role makes the difference between 401 and 403 easy to see.</p>
+  <div class="layout">
+    <section class="panel controls"><div class="section-title"><h2><i>01</i> The controls</h2><span id="session" class="tag">NO TOKENS</span></div>
+      <form id="login-form">
+        <label for="user">Demo identity</label><select id="user"><option value="bob">Bob · employee · company 1</option><option value="alice">Alice · admin · company 1</option><option value="carol">Carol · employee · company 2</option></select>
+        <label for="password">Password <small>Editable: try a wrong password</small></label><input id="password" value="bob-pass" autocomplete="off">
+        <label for="ttl">Access token lifetime</label><select id="ttl"><option value="20">20 seconds · watch it expire</option><option value="900">15 minutes · original demo</option></select>
+        <button class="primary" type="submit">Sign in & issue tokens <span>→</span></button>
+      </form>
+      <div class="divider"></div><h3>Make an authenticated request</h3><p class="hint">The browser sends your access token in the Authorization header.</p>
+      <div class="buttons"><button data-action="me">GET /me</button><button data-action="admin">GET /admin</button><button data-action="company">GET /company/employees</button></div>
+      <div class="divider"></div><h3>Continue the lifecycle</h3><div class="buttons"><button data-action="refresh" data-needs="refresh">↻ Refresh & rotate</button><button data-action="logout" data-needs="refresh">Log out</button></div>
+      <p class="hint">Refresh consumes the current refresh token and returns a new pair. Logout revokes the refresh token; an issued access token still works until expiry.</p>
+      <div class="divider"></div><h3>Break it, then understand it</h3><div class="buttons experiments"><button data-action="missing">Omit access token</button><button data-action="tamper" data-needs="access">Tamper role → admin</button><button data-action="reuse" data-needs="previous">Reuse old refresh token</button></div>
+      <p class="hint">After logout, try Refresh and GET /me. Tokens stay visible in this lab so you can test what the server actually revoked.</p>
+    </section>
+    <section class="panel tokens"><div class="section-title"><h2><i>02</i> Your token wallet</h2><span class="tag">BROWSER MEMORY</span></div>
+      <div class="token-heading"><h3>Access token <span class="tag">JWT</span></h3><span id="expiry">Not issued</span></div>
+      <div class="meter"><div id="lifetime"></div></div>
+      <p class="hint">Short-lived proof of identity. Sent to protected endpoints.</p>
+      <pre id="access-token" class="raw">Sign in to see header.payload.signature</pre>
+      <div class="legend"><span class="header-color">● Header</span><span class="payload-color">● Payload</span><span class="signature-color">● Signature</span></div>
+      <div class="decoded"><div><h4>HEADER · ALGORITHM</h4><pre id="header">—</pre></div><div><h4>PAYLOAD · CLAIMS</h4><pre id="payload">—</pre></div></div>
+      <p class="hint">Decoded here without a secret. Reading a JWT does <strong>not</strong> verify it. The server checks its signature and expiration.</p>
+      <div class="divider"></div><div class="token-heading"><h3>Refresh token <span class="tag">OPAQUE</span></h3><span id="refresh-state">Not issued</span></div>
+      <pre id="refresh-token" class="raw">Sign in to see your refresh token</pre>
+      <p class="hint">A random value, not a JWT. The server stores it with a 7-day expiry. Only /refresh and /logout receive it.</p>
+      <details id="old-token-details"><summary>Previous refresh token <span id="old-state"></span></summary><pre id="old-refresh" class="raw">Refresh once to compare the old and new tokens.</pre></details>
+      <p class="footnote">Learning mode deliberately displays credentials and tokens. Reloading clears the browser wallet and trace, but does not revoke server tokens.</p>
+    </section>
+  </div>
+  <section class="panel trace-panel"><div class="section-title"><h2><i>03</i> Request / response trace</h2><button id="clear" class="quiet">Clear trace</button></div><p class="hint">Newest first. Open an exchange to inspect the exact request headers, JSON body, and server response.</p><div id="trace" aria-live="polite"><p class="empty">Your first exchange starts with a click. No terminal required.</p></div></section>
+  <footer>JWT LAB <span>Python standard library · HS256 · Refresh token rotation</span></footer>
+</main>
+</body>
+</html>
